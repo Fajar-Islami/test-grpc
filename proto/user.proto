@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package pb;
+import "google/protobuf/empty.proto";
+
+option go_package = "./pb";
+
+message LoginReq{
+    string email = 1;
+    string password = 2;
+}
+
+message AccessToken{
+    string access_token = 1;
+}
+
+message LoginRes{
+    bool status = 1;
+    string message = 2;
+    AccessToken data = 3;
+}
+
+message UserRes{
+    int32 role_id = 1;
+    string role_name = 2;
+    string name = 3;
+    string email = 4;
+    string last_access = 5;
+    int32 id = 6;
+}
+
+message GetUserRes{
+    bool status = 1;
+    string message = 2;
+    repeated UserRes data = 3;
+}
+
+message DefaultRes{
+    bool status = 1;
+    string message = 2;
+}
+
+message CreateUserReq{
+    int32 role_id = 1;
+    string password = 2;
+    string name = 3;
+    string email = 4;
+}
+
+message UpdateUserReq{
+    int32 id = 1;
+    string name = 2;
+}
+
+message DeleteUserReq{
+    int32 id = 1;
+}
+
+
+service Users {
+    rpc Login(LoginReq) returns (LoginRes) {}
+    rpc List(google.protobuf.Empty) returns (GetUserRes) {}
+    rpc Register(CreateUserReq) returns (DefaultRes) {}
+    rpc Update(UpdateUserReq) returns (DefaultRes) {}
+    rpc Delete(DeleteUserReq) returns (DefaultRes) {}
+}
