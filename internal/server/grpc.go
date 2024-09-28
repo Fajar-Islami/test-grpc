@@ -64,6 +64,10 @@ func (s UsersServer) List(ctx context.Context, in *emptypb.Empty) (res *pb.GetUs
 	if err != nil {
 		return
 	}
+	err = s.CheckHeader(ctx)
+	if err != nil {
+		return
+	}
 
 	// Get User
 	listUser, err := s.UserUsc.GetUser(ctx)
@@ -99,6 +103,11 @@ func (s UsersServer) Register(ctx context.Context, in *pb.CreateUserReq) (res *p
 	if err != nil {
 		return
 	}
+	err = s.CheckHeader(ctx)
+	if err != nil {
+		return
+	}
+
 	err = s.UserUsc.CreateUser(ctx, useru.UserCreateReq{
 		RoleID:   int(in.RoleId),
 		Email:    in.Email,
@@ -120,6 +129,10 @@ func (s UsersServer) Update(ctx context.Context, in *pb.UpdateUserReq) (res *pb.
 	if err != nil {
 		return
 	}
+	err = s.CheckHeader(ctx)
+	if err != nil {
+		return
+	}
 	err = s.UserUsc.UpdateUser(ctx, useru.UserUpdate{
 		ID:   int(in.Id),
 		Name: in.Name,
@@ -137,6 +150,10 @@ func (s UsersServer) Update(ctx context.Context, in *pb.UpdateUserReq) (res *pb.
 
 func (s UsersServer) Delete(ctx context.Context, in *pb.DeleteUserReq) (res *pb.DefaultRes, err error) {
 	err = s.CheckRole(ctx, "delete")
+	if err != nil {
+		return
+	}
+	err = s.CheckHeader(ctx)
 	if err != nil {
 		return
 	}
@@ -161,7 +178,7 @@ func (s *UsersServer) CheckJWT(ctx context.Context) (data *utils.DataClaims, err
 
 	token := md["token"]
 
-	fmt.Println("token", token)
+	// fmt.Println("token", token)
 
 	if len(token) < 1 {
 		err = status.Error(codes.Unauthenticated, "error Unauthenticated")
@@ -197,6 +214,41 @@ func (s *UsersServer) CheckRole(ctx context.Context, method string) (err error) 
 	)
 	if err != nil {
 		err = status.Error(codes.Unauthenticated, "error Unauthenticated")
+		return
+	}
+
+	return
+}
+
+func (s *UsersServer) CheckHeader(ctx context.Context) (err error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		err = status.Error(codes.Unauthenticated, "error CheckHeader Unauthenticated")
+		return
+	}
+
+	for k, v := range md {
+		fmt.Println(k, v)
+	}
+	linkService := md["x-link-service"]
+
+	fmt.Println("linkService", linkService)
+
+	if len(linkService) < 1 {
+		err = status.Error(codes.Unauthenticated, "error CheckHeader Unauthenticated")
+		return
+	}
+	if linkService[0] == "" {
+		err = status.Error(codes.Unauthenticated, "error CheckHeader Unauthenticated")
+		return
+	}
+	if linkService[0] != "be" {
+		err = status.Error(codes.Unauthenticated, "error CheckHeader Unauthenticated")
+		return
+	}
+
+	if err != nil {
+		err = status.Error(codes.Unauthenticated, "error CheckHeader Unauthenticated")
 		return
 	}
 
